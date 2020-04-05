@@ -36,4 +36,3 @@ try
 catch ex
     bc_exist = false;
 end
-%             disp(['h = ' num2str(h) ', tau = ' num2str(tau) ' done', res]);

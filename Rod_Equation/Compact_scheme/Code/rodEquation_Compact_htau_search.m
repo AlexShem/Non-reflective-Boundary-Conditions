@@ -1,4 +1,4 @@
-function U = rodEquation_CN_htau_search(h, tau, polynomDEG_bor, T)
+function U = rodEquation_Compact_htau_search(h, tau, polynomDEG_bor, T)
 %     Set the parameters
 par = [7860, 1e-3, 210e9];  % %For Steel
 %     par = [7860, 1.1e-3, 210e9];  % %Slight change
