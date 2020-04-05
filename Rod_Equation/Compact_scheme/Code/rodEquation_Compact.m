@@ -194,21 +194,21 @@ yl.FontSize = 18;
 
 
 % Lazy animation
-figure(6)
-pause(.1);
-for i = 1 : 2 : Nt
-    subplot(1,2,1);
-    plot(0:h:L, U(i,:)); hold on;
-    plot(0:h:L, true_sol(i, :), '--k'); hold off;
-    axis([0 L h_min h_max]);
-    title(['t = ' num2str((i-1)*tau)]);
-    
-    subplot(1,2,2);
-    plot(0:h:L, log10(abs(U(i,:) - true_sol(i,:))));
-    title(['t = ' num2str((i-1)*tau)]);
-    axis([0 L -6 0])
-    pause(.01);
-end
+% figure(6)
+% pause(.1);
+% for i = 1 : 2 : Nt
+%     subplot(1,2,1);
+%     plot(0:h:L, U(i,:)); hold on;
+%     plot(0:h:L, true_sol(i, :), '--k'); hold off;
+%     axis([0 L h_min h_max]);
+%     title(['t = ' num2str((i-1)*tau)]);
+%     
+%     subplot(1,2,2);
+%     plot(0:h:L, log10(abs(U(i,:) - true_sol(i,:))));
+%     title(['t = ' num2str((i-1)*tau)]);
+%     axis([0 L -6 0])
+%     pause(.01);
+% end
 
 
 % %    Making animation
