@@ -90,8 +90,8 @@ U_at_ppTime(end:-1:end-1, end:-1:end-step_space_bor+1) = [coefsm_bor(3, :); coef
 nStepT_bor = max(polynomDEG_bor) + 1;
 nStepT_prebor = max(polynomDEG_prebor) + 1;
 
+contr = max(abs(u_0));
 for n = 3 : Nt
-    % MAKER A BORDER HERE
     cf_rem_bor = coefsm_bor(4 : min(nStepT_bor, n), :);
     cf_rem_prebor = coefsm_prebor(4 : min(nStepT_prebor, n), :);
     U_prev_left_bor = U(n-3 : -1 : max(n-nStepT_bor+1, 1), 1 : step_space_bor);
@@ -110,7 +110,7 @@ for n = 3 : Nt
     rightPart(end-1) = rightPart(end-1) + add_right_prebor;
     rightPart(end) = rightPart(end) + add_right_bor;
     
-    U(n, :) = - U_now \ rightPart;
+    U(n, :) = - U_now_inv * rightPart;
 end
 
 %profile report
@@ -134,56 +134,58 @@ patern_right_str = patern_right_str(1:end-1);
 x_domain = linspace(0, L, Nx);
 time = linspace(0, T, Nt);
 
-tic
-true_sol = rodEquation_CN_PseudoTrueSolution_v2([h, tau], par, [nu mu], T, u_0, u_tau, x_domain);
-toc
-
+true_sol = rodEquation_CN_PseudoTrueSolution([h, tau], [nu mu], T, u_0, u_tau, x_domain);
 center = size(true_sol, 2) / 2 + .5;
 LB = ceil(center - Nx/2);
 RB = floor(center + Nx/2);
 true_sol = true_sol(:, LB:RB);
 
 
-% % Plot Energy norm
-f1 = figure(11);
-hold on;
-[H_int, K_int, P_int] = int_sum_derivative(U - true_sol, h, tau, par(1), par(2), par(3));
-H = sqrt(H_int);
-pp = plot(linspace(0, T, length(H)), log10(H));
-xl = xlabel('$t$ (s)', 'Interpreter', 'latex', 'FontSize', 18);
-yl = ylabel('$\log_{10} \mathcal{H} [u_j(t) - u_j^*(t)]$', 'Interpreter', 'latex', 'FontSize', 18);
-axis([0 T -1 4.5]); pp.LineWidth = 1.4;
-ax1 = f1.CurrentAxes; ax1.FontSize = 14;
-
-% % % Plot C norm
-f2 = figure(12);
+% % Plot max log_10 |U - U_true|
+f2 = figure(2);
 hold on;
 Max_diff_U_true = max(abs(U - true_sol), [], 2);
-pp = plot(linspace(0, T, length(Max_diff_U_true)), log10(Max_diff_U_true));
-xl = xlabel('$t$ (s)', 'Interpreter', 'latex', 'FontSize', 18);
-yl = ylabel('$\log_{10} \max_j |u_j(t) - u_j^*(t)|$', 'Interpreter', 'latex', 'FontSize', 18);
-axis([0 T -5.5 -1]); pp.LineWidth = 1.4;
+pp = plot(linspace(0, T, length(Max_diff_U_true)), log10(Max_diff_U_true)); xl = xlabel('t');
+%     yl = ylabel('log_{10}M_d(t)');
+%     ttl = title({'log_{10}M_d(t)', ['\nu = ', num2str(nu) '; h = ', num2str(h), '; c = ', num2str(c)], ['Шаблон: ', patern_str]});
+%     ttl = title({'log_{10} max_x |\hat{u} - u| (t)', ['\nu = ', num2str(nu), ', \mu = ', num2str(mu), ', h = ', num2str(h), ', \tau = ', num2str(tau)],...
+%         ['Bor: ', patern_str, ', PreBor: ', prepatern_str]});
+%     ttl = title({'log_{10} |u - u^*|', ...
+%         ['\nu = ', num2str(nu), ', \mu = ', num2str(mu), ', h = ', num2str(h), ', \tau = ', num2str(tau)], ...
+%         [patern_left_str, ' ; ', patern_right_str]});
+%     ttl = title({'log_{10} |u - u^*|', ...
+%         ['\nu = ', num2str(nu), ', \mu = ', num2str(mu), ', h = ', num2str(h), ', \tau = ', num2str(tau)], ...
+%         ['\rho = ', num2str(par(1)), ', R =  ', num2str(par(2)), ', E = ', num2str(par(3))]});
+%     ttl.FontSize = 16;
+axis([0 T -5.5 -1]); xl.FontSize = 18; pp.LineWidth = 1.4;
+% %     ln = line([0.25 0.25], [-6 -2.5]); ln.LineStyle = '--'; ln.Color = 'k'; ln.LineWidth = 1.2;
+grid on;
 ax2 = f2.CurrentAxes; ax2.FontSize = 14;
+yl = ylabel('max_j lg |u_j - u_j^*|');
+yl.FontSize = 18;
 
-% % Plor L2 norm
-f3 = figure(13);
+
+
+% Plot max log_10 |U - U_true|
+f3 = figure(3);
 hold on;
-L2_diff_U_true = sqrt(trapz(-L/2 : h : L/2, (U - true_sol).^2, 2));
-pp = plot(linspace(0, T, length(L2_diff_U_true)), log10(L2_diff_U_true));
-xl = xlabel('$t$ (s)', 'Interpreter', 'latex', 'FontSize', 18);
-yl = ylabel('$\log_{10} \|u_j(t) - u_j^*(t)\|_2$', 'Interpreter', 'latex', 'FontSize', 18);
-axis([0 T -5.5 -1]); pp.LineWidth = 1.4;
+relative_error = max(log10(abs(U - true_sol)), [], 2) ./ log10(max(true_sol, [], 2));
+%     relative_error = max((abs(U - true_sol)), [], 2) ./ (max(true_sol, [], 2));
+pp = plot(linspace(0, T, length(relative_error)), relative_error); xl = xlabel('t');
+axis([0 T 0 8]); xl.FontSize = 18; pp.LineWidth = 1.4;
+grid on;
 ax3 = f3.CurrentAxes; ax3.FontSize = 14;
+yl = ylabel('max_j lg |u_j - u_j^*| / lg max_j |u_j^*|');
+yl.FontSize = 18;
 
 
-% % Lazy animation
-% figure(14)
-% pause(1);
-% for i = 1 : 10 : Nt
+% Lazy animation
+% figure(6)
+% pause(.1);
+% for i = 1 : 2 : Nt
 %     subplot(1,2,1);
 %     plot(0:h:L, U(i,:)); hold on;
 %     plot(0:h:L, true_sol(i, :), '--k'); hold off;
-% %     axis([0 L .01*h_min .01*h_max]);
 %     axis([0 L h_min h_max]);
 %     title(['t = ' num2str((i-1)*tau)]);
 %     
@@ -196,36 +198,39 @@ ax3 = f3.CurrentAxes; ax3.FontSize = 14;
 
 
 % %    Making animation
-%     filename = strcat('anim_', patern_left_str, '.gif');
-%     figure(15);
-%     pause(1);
-%     for i = 1 : 10 : Nt
-% 
-%         subplot(1,2,1);
-%         plot(-L/2 : h : L/2, U(i, :)); hold on;
-%         plot(-L/2 : h : L/2, true_sol(i, :), '--k'); hold off;
-%         axis([-L/2 L/2 h_min h_max]);
-%         xlabel('$x\,(m)$', 'FontSize', 16, 'Interpreter', 'latex');
-%         lg = legend('$u$', '$u^*$'); lg.FontSize = 18; lg.Location = 'northeast'; lg.Interpreter = 'latex';
-%         title(patern_left_str);
-%         
-%         subplot(1,2,2);
-%         plot(-L/2 : h : L/2, log10(abs(U(i, :) - true_sol(i,:))));
-%         title(['t = ' num2str(tau * (i-1))]);
-%         axis([-L/2 L/2 -6 0]);
-%         xlabel('$x\,(m)$', 'FontSize', 16, 'Interpreter', 'latex');
-% %         yl = ylabel('$log_{10} |u - u^*|$', 'Interpreter', 'latex'); yl.FontSize = 16;
-%         lg = legend('$\log_{10} |u - u^*|$', 'Interpreter', 'latex'); lg.FontSize = 16; lg.Interpreter = 'latex';
-% 
-%         drawnow;
-%         frame = getframe(15);
-%         im = frame2im(frame);
-%         [A, map] = rgb2ind(im, 256);
-%         if i == 1
-%             imwrite(A, map, filename, 'gif', 'LoopCount', Inf, 'DelayTime', 0.001);
-%         else
-%             imwrite(A, map, filename, 'gif', 'WriteMode', 'append', 'DelayTime', 0);
-%         end
+% filename = strcat('abs_error_anim_', patern_left_str, 'nu_', num2str(nu), 'mu_', num2str(mu), '_tau_', num2str(tau), '_h_', num2str(h), '.gif');
+% figure(5);
+% pause(.5);
+% for i = 1 : ceil(.0005 / tau) : Nt
+%     plot(0:h:L, U(i, :));
+%
+%     subplot(1,2,1);
+%     plot(-L/2 : h : L/2, U(i, :)); hold on;
+%     plot(-L/2 : h : L/2, true_sol(i, :), '--k'); hold off;
+%     axis([-L/2 L/2 h_min h_max]);
+%     xlabel('x', 'FontSize', 16);
+%     lg = legend('u(t, x)', 'u_{true}(t, x)'); lg.FontSize = 14; lg.Location = 'northeast';
+%     title({['t = ' num2str(tau * (i-1))], patern_left_str});
+%
+%     subplot(1,2,2);
+%     plot(-L/2 : h : L/2, log10(abs(U(i, :) - true_sol(i,:))));
+%     title({['t = ' num2str(tau * (i-1))], patern_left_str});
+%     axis([-L/2 L/2 -6 0]);
+%     axis([0 L -0.12 0.12]);
+%     ttl=title({['Волна в t = ', num2str((i - 1) * tau), 'с.'],...
+%         ['Шаблон: ', patern_str]}); ttl.FontSize = 16;
+%     ttl = title({'Волна в ', ['t = ', num2str((i - 1) * tau), 'с.']}); ttl.FontSize = 16;
+%     xlabel('x', 'FontSize', 16);
+%     yl = ylabel('log_{10} |\it{u - u^*}|'); yl.FontSize = 16;
+%
+%     drawnow;
+%     frame = getframe(5);
+%     im = frame2im(frame);
+%     [A, map] = rgb2ind(im, 256);
+%     if i == 1
+%         imwrite(A, map, filename, 'gif', 'LoopCount', Inf, 'DelayTime', 0.001);
+%     else
+%         imwrite(A, map, filename, 'gif', 'WriteMode', 'append', 'DelayTime', 0);
 %     end
-
+% end
 end

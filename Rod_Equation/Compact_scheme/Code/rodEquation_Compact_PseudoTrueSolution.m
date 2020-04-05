@@ -1,4 +1,4 @@
-function U = rodEquation_CN_PseudoTrueSolution(steps, kurant, T, u_0, u_tau, domain)
+function U = rodEquation_Compact_PseudoTrueSolution(steps, kurant, T, u_0, u_tau, domain)
 
     h = steps(1); tau = steps(2);
 
