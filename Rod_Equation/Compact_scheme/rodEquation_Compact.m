@@ -1,5 +1,4 @@
 function U = rodEquation_Compact(patterns)
-%     load Compact_Pade_Coeffs;
 %profile on
 
 %     h = 0.005; tau = 0.001;   %Precise
@@ -12,15 +11,15 @@ h = 0.0025*8; tau = 0.00001;
 par = [7860, 1e-2, 210e9];  % %For Steel
 D = par(2)^2;   C = par(3) * par(2)^2 / par(1);
 
-nu = C * tau^2 / h^4; % Параметр Куранта
+nu = C * tau^2 / h^4;
 mu = D / h^2;
 a = 3/(12*mu + 4) - .5; b = 9*nu/(3*mu + 1) - 2; c = 1 - (12*nu + 3) / (6*mu + 2); d = 3*nu / (6*mu + 2);
 
-L = 1;  %Длина струны, м.
-T = 1; %Время, сек.
+L = 1;
+T = 1;
 
-Nx = single(L / h + 1); % Кол-во точек по пространству
-Nt = single(T / tau + 1);   % Кол-во точек по времени
+Nx = single(L / h + 1);
+Nt = single(T / tau + 1);
 
 x = linspace(0, L, Nx);
 time = linspace(0, T, Nt);
@@ -74,7 +73,6 @@ for i = 1:step_space_prebor
 end
 coefsm_prebor(coefsm_prebor == 1) = preborderDEG;
 
-% Создаем начальные матрицы, не учитывающие граничные коэффициенты
 U_now = diag(a*ones(1, Nx)) + diag(b * ones(1, Nx-1), 1) + diag(b * ones(1, Nx-1), -1) + diag(s * ones(1, Nx-2), 2) + diag(s * ones(1, Nx-2), -2);
 U_now(1, :) = 0; U_now(2, :) = 0;
 U_now(end, :) = 0; U_now(end-1, :) = 0;
@@ -87,13 +85,13 @@ U_at_ppTime = diag(a*ones(1, Nx)) + diag(b * ones(1, Nx-1), 1) + diag(b * ones(1
 U_at_ppTime(1, :) = 0; U_at_ppTime(2, :) = 0;
 U_at_ppTime(end, :) = 0; U_at_ppTime(end-1, :) = 0;
 
-%     % Заполняем нужные элементы матриц
 U_now(1:2, 1:step_space_bor) = [coefsm_bor(1, :); coefsm_prebor(1, :)];
 U_now(end:-1:end-1, end:-1:end-step_space_bor+1) = [coefsm_bor(1, :); coefsm_prebor(1, :)];
 U_at_pTime(1:2, 1:step_space_bor) = [coefsm_bor(2, :); coefsm_prebor(2, :)];
 U_at_pTime(end:-1:end-1, end:-1:end-step_space_bor+1) = [coefsm_bor(2, :); coefsm_prebor(2, :)];
 U_at_ppTime(1:2, 1:step_space_bor) = [coefsm_bor(3, :); coefsm_prebor(3, :)];
 U_at_ppTime(end:-1:end-1, end:-1:end-step_space_bor+1) = [coefsm_bor(3, :); coefsm_prebor(3, :)];
+
 
 
 U_at_pTime = sparse(U_at_pTime);
@@ -150,7 +148,7 @@ patern_right_str = patern_right_str(1:end-1);
 x_domain = linspace(0, L, Nx);
 time = linspace(0, T, Nt);
 
-true_sol = rodEquation_CN_PseudoTrueSolution_v2([h, tau], par, [nu mu], T, u_0, u_tau, x_domain);
+true_sol = rodEquation_CN_PseudoTrueSolution([h, tau], [nu mu], T, u_0, u_tau, x_domain);
 center = size(true_sol, 2) / 2 + .5;
 LB = ceil(center - Nx/2);
 RB = floor(center + Nx/2);

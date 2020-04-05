@@ -16,7 +16,7 @@ function u_tau = u_tau_function(h, D, C, f)
     B(1,:) = []; B(end,:) = [];
 
     % Boundary Conditions
-    B(1,:) = 0; B(end, :) = 0;
+    B(1, :) = 0; B(end, :) = 0;
     A(1, 1) = 1; A(1, 2) = exp(h/sqrt(D));
     A(end, end) = 1; A(end, end-1) = exp(h/sqrt(D));
 
