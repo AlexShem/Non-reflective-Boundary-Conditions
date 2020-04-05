@@ -54,8 +54,8 @@ for i = 1:step_space_prebor
 end
 coefsm_prebor(coefsm_prebor == 1) = preborderDEG;
 
-U_now = spdiags(ones(Nx, 1) .* [s b a b s], -2:2, Nx, Nx);
-U_at_pTime = spdiags(ones(Nx, 1) .* [g d g], -1:1, Nx, Nx);
+U_now = spdiags(ones(Nx, 1) .* [a 1 a], -1:1, Nx, Nx);
+U_at_pTime = spdiags(ones(Nx, 1) .* [d c b c d], -2:2, Nx, Nx);
 U_at_ppTime = U_now;
 
 U_now(1:2, 1:step_space_bor) = [coefsm_bor(1, :); coefsm_prebor(1, :)];
