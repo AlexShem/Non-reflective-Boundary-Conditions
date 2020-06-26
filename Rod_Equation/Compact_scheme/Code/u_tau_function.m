@@ -10,11 +10,7 @@ r = -(9*C)/(h^4 + 3*D*h^2);
 
 N = length(u0)-2;
 A = spdiags(ones(N, 1) .* [a 1 a], -1:1, N, N);
-% A = eye(N) + a * diag(ones(N-1,1), -1) + a * diag(ones(N-1,1), 1);
 B = spdiags(ones(N + 2, 1) .* [p q r q p], -2:2, N + 2, N + 2);
-%     B = r*eye(N+2) + ...
-%         q*(diag(ones(N+2-1,1), 1) + diag(ones(N+2-1,1), -1)) + ...
-%         p*(diag(ones(N+2-2,1), 2) + diag(ones(N+2-2,1), -2));
 B(1, :) = [];
 B(end, :) = [];
 
@@ -26,7 +22,5 @@ A(1, 2) = exp(h/sqrt(D));
 A(end, end) = 1;
 A(end, end-1) = exp(h/sqrt(D));
 
-% A = sparse(A);
-% B = sparse(B);
 u_tau = A \ (B*u0);
 end

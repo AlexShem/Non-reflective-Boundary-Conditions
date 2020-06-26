@@ -1,5 +1,9 @@
 function [lam_ser_1, lam_ser_2, lam_ser_3, lam_ser_4] = lambda_series_num(nu, mu, N_lam)
-    a = 1+2*mu + 3*nu; b = -mu - 2*nu; g = 2*mu; d = -2 - 4*mu; s = nu/2;
+    a = 1+2*mu + 3*nu;
+    b = -mu - 2*nu;
+    g = 2*mu;
+    d = -2 - 4*mu;
+    s = nu/2;
     
     eta_1 = eta_series_num(nu, mu, N_lam);
     
