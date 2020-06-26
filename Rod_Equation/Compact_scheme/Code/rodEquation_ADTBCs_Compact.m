@@ -1,4 +1,4 @@
-function U = rodEquation_ADTBCs_Compact(x, t, u0, du0, rod_par)
+function U = rodEquation_ADTBCs_Compact(x, t, u0, du0, rod_par, poly_deg)
 %% Definitions
 
 %   rod_par = [rho, R, E]
@@ -46,7 +46,8 @@ Nt = single(T / tau + 1);
 % true_sol = wave_true_sol(x, time, D) * .1;
 
 u_0 = linspace(0, L, Nx)';
-x = -L/2 : h : L/2; [u_0, sigma] = GaussianDistrib(-.3, .3, x); u_0 = u_0 .* x; u_0 = u_0(:);
+x = -L/2 : h : L/2;
+% [u_0, ~] = GaussianDistrib(-.3, .3, x); u_0 = u_0 .* x; u_0 = u_0(:);
 h_min = min(u_0);
 h_max = max(u_0);
 
@@ -65,10 +66,14 @@ U(2, :) = u_tau';
 %     polynomDEG_bor = [0, 0, 3, 3];
 %     polynomDEG_prebor = [0, 0, 3, 3];
 
-polynomDEG_bor = [4, 5, 8, 8];
 
+polynomDEG_bor = poly_deg.bor;
+polynomDEG_prebor = poly_deg.prebor;
 
-polynomDEG_prebor = polynomDEG_bor;
+% polynomDEG_bor = [4, 5, 8, 8];
+% 
+% 
+% polynomDEG_prebor = polynomDEG_bor;
 %     ---------------------------------------------------
 step_space_bor = length(polynomDEG_bor);
 step_space_prebor = length(polynomDEG_prebor);

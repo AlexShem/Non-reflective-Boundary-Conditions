@@ -11,7 +11,7 @@ R = 1e-2;
 E = 210e9;
 rod_par = [rho, R, E];
 D = R^2;
-C = E*R^2/rho
+C = E*R^2/rho;
 
 h = 0.01;
 tau = 0.0001;
