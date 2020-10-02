@@ -24,6 +24,16 @@ Nt = ceil(T / tau) + 1;
 % Adjust step h
 tau = T / (Nt - 1);
 
+% Calculate dimensionless parameters
+nu = C * tau^2 / h^4;
+mu = D / h^2;
+
+% Calculate the coefficients of the compact scheme
+a = 3/(12*mu + 4) - .5;
+b = (9*nu)/(3*mu + 1) - 2;
+c = 1 - (12*nu + 3)/(6*mu + 2);
+d = (3*nu)/(6*mu + 2);
+
 
 
 %% Initial Conditions
