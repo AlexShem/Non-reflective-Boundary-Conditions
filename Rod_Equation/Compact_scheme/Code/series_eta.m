@@ -9,7 +9,7 @@ d = (3*nu)/(6*mu + 2);
 
 x = 1+72*nu/(6*mu-1)^2;
 
-legandre_sum = zeros(1, N_terms + 2);
+legandre_sum = zeros(1, N_terms + 3);
 for n = 0 : N_terms + 1
     legandre_sum(end - n) = P(n, x);
 end
