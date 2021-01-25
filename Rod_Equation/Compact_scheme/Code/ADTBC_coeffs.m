@@ -1,5 +1,5 @@
 function [polyCoeff_bor, polyCoeff_prebor] = ...
-    PadeCoef_poly(nu, mu, deg_bor, deg_prebor, constant_condition, x_condition)
+    ADTBC_coeffs(nu, mu, deg_bor, deg_prebor, constant_condition)
 
     step_num_1 = length(deg_bor);
     step_num_2 = length(deg_prebor);
@@ -8,7 +8,7 @@ function [polyCoeff_bor, polyCoeff_prebor] = ...
     maxTotalDeg = max([totalDeg_1, totalDeg_2]);
     
     % Use condition for u(t, x) = const
-	condition_type = xor(constant_condition, x_condition);
+	condition_type = constant_condition;
     if condition_type == 1 && (mod(totalDeg_1, 2) == 0)
         error('Number of coefs in Border Deg must be odd');
     elseif condition_type == 1 && (mod(totalDeg_2, 2) == 0)
@@ -19,7 +19,7 @@ function [polyCoeff_bor, polyCoeff_prebor] = ...
         error('Number of coefs in PreBorder Deg must be even');
     end
     
-    [~, ~, lam_ser_3, lam_ser_4] = series_lambda(nu, mu, maxTotalDeg + 5);
+    [~, ~, lam_ser_3, lam_ser_4] = lambda_series_num(nu, mu, maxTotalDeg+5);
 
     num_unknCoeff_bor = totalDeg_1;
     num_unknCoeff_prebor = totalDeg_2;
@@ -196,7 +196,7 @@ function [polyCoeff_bor, polyCoeff_prebor] = ...
 %     A_prebor(end, :) = 1; B_prebor(end) = 0;  % Constant condition
     
     % A bit of cheating
-%     A_bor = real(A_bor); A_prebor = real(A_prebor);
+    A_bor = real(A_bor); A_prebor = real(A_prebor);
     
     eig_val_bor = eig(A_bor); eig_bor_min = min(abs(eig_val_bor));
     eig_val_prebor = eig(A_prebor); eig_prebor_min = min(abs(eig_val_prebor));

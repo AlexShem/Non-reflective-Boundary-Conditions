@@ -1,22 +1,41 @@
-function U = rodEquation_Compact(patterns)
-%profile on
+function U = rodEquation_ADTBCs_Compact(x, t, u0, du0, rod_par, poly_deg)
+%% Definitions
 
-%     h = 0.005; tau = 0.001;   %Precise
-h = 0.0025*8; tau = 0.00001;
-%     h = 0.00025; tau = 0.00025;
-%     h = 0.001; tau = 0.0002;
+%   rod_par = [rho, R, E]
 
-%     Set the parameters
-%   par = [rho, R, E]
-par = [7860, 1e-2, 210e9];  % %For Steel
-D = par(2)^2;   C = par(3) * par(2)^2 / par(1);
+%% Input variables' checks
 
+% Check if x is a uniform grid
+if std(diff(x)) > eps
+    error('x (space) should be uniformly distributed grid.')
+end
+% Check if t is a uniform grid
+if std(diff(t)) > eps
+    error('t (time) should be uniformly distributed grid.')
+end
+if length(x) ~= length(u0) || ...
+        length(x) ~= length(du0) || ...
+        length(u0) ~= length(du0)
+    error('Dimensions of x, u0 and du0 should match.')
+end
+
+%% Local variable definition
+
+L = x(end) - x(1);
+T = t(end) - t(1);
+
+h = x(2) - x(1);
+tau = t(2) - t(1);
+
+D = rod_par(2)^2;
+C = rod_par(3) * rod_par(2)^2 / rod_par(1);
 nu = C * tau^2 / h^4;
 mu = D / h^2;
-a = 3/(12*mu + 4) - .5; b = 9*nu/(3*mu + 1) - 2; c = 1 - (12*nu + 3) / (6*mu + 2); d = 3*nu / (6*mu + 2);
 
-L = 1;
-T = 1;
+a = 3/(12*mu + 4) - .5;
+b = 9*nu/(3*mu + 1) - 2;
+c = 1 - (12*nu + 3) / (6*mu + 2);
+d = 3*nu / (6*mu + 2);
 
 Nx = single(L / h + 1);
 Nt = single(T / tau + 1);
@@ -27,7 +46,8 @@ Nt = single(T / tau + 1);
 % true_sol = wave_true_sol(x, time, D) * .1;
 
 u_0 = linspace(0, L, Nx)';
-x = -L/2 : h : L/2; [u_0, sigma] = GaussianDistrib(-.3, .3, x); u_0 = u_0 .* x; u_0 = u_0(:);
+x = -L/2 : h : L/2;
+% [u_0, ~] = GaussianDistrib(-.3, .3, x); u_0 = u_0 .* x; u_0 = u_0(:);
 h_min = min(u_0);
 h_max = max(u_0);
 
@@ -46,10 +66,14 @@ U(2, :) = u_tau';
 %     polynomDEG_bor = [0, 0, 3, 3];
 %     polynomDEG_prebor = [0, 0, 3, 3];
 
-polynomDEG_bor = [4, 5, 8, 8];
 
+polynomDEG_bor = poly_deg.bor;
+polynomDEG_prebor = poly_deg.prebor;
 
-polynomDEG_prebor = polynomDEG_bor;
+% polynomDEG_bor = [4, 5, 8, 8];
+% 
+% 
+% polynomDEG_prebor = polynomDEG_bor;
 %     ---------------------------------------------------
 step_space_bor = length(polynomDEG_bor);
 step_space_prebor = length(polynomDEG_prebor);
@@ -104,13 +128,13 @@ for n = 3 : Nt
     add_right_bor = cf_rem_bor .* U_prev_right_bor; add_right_bor = sum(add_right_bor(:));
     add_right_prebor = cf_rem_prebor .* U_prev_right_prebor; add_right_prebor = sum(add_right_prebor(:));
     
-    rightPart = U_at_pTime * U(n-1, :).' + U_at_ppTime * U(n-2, :).';
-    rightPart(1) = rightPart(1) + add_left_bor;
-    rightPart(2) = rightPart(2) + add_left_prebor;
-    rightPart(end-1) = rightPart(end-1) + add_right_prebor;
-    rightPart(end) = rightPart(end) + add_right_bor;
+    rightrod_part = U_at_pTime * U(n-1, :).' + U_at_ppTime * U(n-2, :).';
+    rightrod_part(1) = rightrod_part(1) + add_left_bor;
+    rightrod_part(2) = rightrod_part(2) + add_left_prebor;
+    rightrod_part(end-1) = rightrod_part(end-1) + add_right_prebor;
+    rightrod_part(end) = rightrod_part(end) + add_right_bor;
     
-    U(n, :) = - U_now \ rightPart;
+    U(n, :) = - U_now \ rightrod_part;
 end
 
 %profile report
@@ -135,7 +159,7 @@ x_domain = linspace(0, L, Nx);
 time = linspace(0, T, Nt);
 
 tic
-true_sol = rodEquation_CN_PseudoTrueSolution_v2([h, tau], par, [nu mu], T, u_0, u_tau, x_domain);
+true_sol = rodEquation_CN_PseudoTrueSolution_v2([h, tau], rod_par, [nu mu], T, u_0, u_tau, x_domain);
 toc
 
 center = size(true_sol, 2) / 2 + .5;
@@ -147,7 +171,7 @@ true_sol = true_sol(:, LB:RB);
 % % Plot Energy norm
 f1 = figure(11);
 hold on;
-[H_int, K_int, P_int] = int_sum_derivative(U - true_sol, h, tau, par(1), par(2), par(3));
+[H_int, K_int, P_int] = int_sum_derivative(U - true_sol, h, tau, rod_par(1), rod_par(2), rod_par(3));
 H = sqrt(H_int);
 pp = plot(linspace(0, T, length(H)), log10(H));
 xl = xlabel('$t$ (s)', 'Interpreter', 'latex', 'FontSize', 18);
